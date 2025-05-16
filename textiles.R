@@ -20,7 +20,7 @@ library(AER)
 
 rm(bartik_full_postdo)
 
-data <- read_dta("D:/fullN_textiles0207.dta")
+data = read_dta("D:/fullN_textiles0207.dta")
 
 # Movers - lag j
 
@@ -38,7 +38,7 @@ movers[, lag_j := shift(j, type = "lag", n = 1)]
 
 
 # job movers (ee)
-movers <- movers %>%
+movers = movers %>%
   group_by(i) %>%
   mutate(
     ee = ifelse(year > min(year) & j != lag_j, 1, 0),
@@ -55,7 +55,7 @@ gc()
 
 # Unique firms per industry
 
-df_industry_firms <- data %>%
+df_industry_firms = data %>%
   group_by(caem3, year) %>%  # grouping by 3-igit industry and year
   summarise(
     totaluniquefirms = n_distinct(j),  # counting unique firms
@@ -71,7 +71,7 @@ names(data)[names(data) == "totaluniquefirms.y"] <- "totaluniquefirms"
 
 # firm labor productivity - number of workers
 
-df <- data %>%
+df = data %>%
  mutate(
    vn = as.numeric(sales),           
    pemp = as.numeric(nworkers) 
@@ -96,7 +96,7 @@ data = data %>%
   mutate(total_hours = sum(hours)) %>%
   ungroup()
 
-df <- data %>%
+df = data %>%
   mutate(
     vn = as.numeric(sales),
     total_hours = as.numeric(total_hours)
@@ -113,7 +113,7 @@ data = data %>%
 
 # industry productivity - number of workers
 
-df_industry <- data %>%
+df_industry = data %>%
  group_by(caem3, year) %>% 
  summarise(
    total_sales = sum(sales, na.rm = TRUE),      
@@ -132,7 +132,7 @@ data = data %>% select(-c("total_workers", "total_sales"))
 
 # industry productivity - hours of work
 
-df_industry <- data %>%
+df_industry = data %>%
   group_by(caem3, year) %>%  # Group by industry and year
   summarise(
     total_sales = sum(sales, na.rm = TRUE),      
@@ -151,7 +151,7 @@ data = data %>% select(-c("ind_total_hours", "total_sales"))
 
 # wage floors
 
-mode_function <- function(x) {
+mode_function = function(x) {
   uniq_x = unique(x)
   uniq_x[which.max(tabulate(match(x, uniq_x)))]
 }
@@ -168,7 +168,7 @@ data = data %>%
 
 # industry time series plot
 
-df_long <- data %>%
+df_long = data %>%
   pivot_longer(cols = c(sl_prod_hours, sl_prod_workers), names_to = "variable", values_to = "value")
 
 df_summary <- df_long %>%
@@ -190,10 +190,10 @@ ts_industry = ggplot(df_summary, aes(x = year)) +
 
 ## wages and hours time series plot
 
-df_long <- data %>%
+df_long = data %>%
   pivot_longer(cols = c(r_i_wages, hours), names_to = "variable", values_to = "value")
 
-df_summary <- df_long %>%
+df_summary = df_long %>%
   group_by(year, variable) %>%
   summarise(mean_value = mean(value, na.rm = TRUE),
             median_value = median(value, na.rm = TRUE),
@@ -222,28 +222,28 @@ gc()
 ### Autor et al (2013), Pierce and Schott (2016), Bloom et al (2024)
 ### These studies motivate the use of pre-shock productivity gap as exposure proxy
 
-sub_industry_prod <- data %>%
+sub_industry_prod = data %>%
   group_by(caem3, year) %>%
   summarise(sub_industry_productivity_workers = mean(sl_prod_workers, na.rm = TRUE),
             sub_industry_productivity_hours = mean(sl_prod_hours, na.rm = TRUE))
 
-national_prod <- data %>%
+national_prod = data %>%
   group_by(year) %>%
   summarise(national_productivity_workers = mean(sl_prod_workers, na.rm = TRUE),
             national_productivity_hours = mean(sl_prod_hours, na.rm = TRUE))
 
-prod_gap <- sub_industry_prod %>%
+prod_gap = sub_industry_prod %>%
   left_join(national_prod, by = "year") %>%
   mutate(productivity_gap_workers = sub_industry_productivity_workers - national_productivity_workers,
          productivity_gap_hours = sub_industry_productivity_hours - national_productivity_hours)
 
-pre_shock_gap <- prod_gap %>%
+pre_shock_gap = prod_gap %>%
   filter(year == 2002) %>%
   group_by(caem3) %>%
   summarise(mean_gap_workers = mean(productivity_gap_workers, na.rm = TRUE),
             mean_gap_hours = mean(productivity_gap_hours, na.rm = TRUE))
 
-pre_shock_gap <- pre_shock_gap %>%
+pre_shock_gap = pre_shock_gap %>%
   mutate(pos = mean_gap_hours >= 0)
 
 gap1 = ggplot(pre_shock_gap, aes(x = reorder(caem3, mean_gap_hours), y = mean_gap_hours, fill = pos)) +
@@ -260,24 +260,24 @@ rm(prod_gap, sub_industry_prod, national_prod) # below average: caem3 in {173, 1
 ### Ebenstein et al. (2014), Dauth et al. (2017)
 ### These studies motivate the use of pre-shock labor intensity (low wages) as exposure proxy
 
-sub_industry_prod <- data %>%
+sub_industry_prod = data %>%
   group_by(caem3, year) %>%
   summarise(sub_industry_wages = mean(rganho, na.rm = TRUE))
 
-national_prod <- data %>%
+national_prod = data %>%
   group_by(year) %>%
   summarise(national_wages = mean(rganho, na.rm = TRUE))
 
-prod_gap <- sub_industry_prod %>%
+prod_gap = sub_industry_prod %>%
   left_join(national_prod, by = "year") %>%
   mutate(wage_gap = sub_industry_wages - national_wages)
 
-pre_shock_gap <- prod_gap %>%
+pre_shock_gap = prod_gap %>%
   filter(year == 2002) %>%
   group_by(caem3) %>%
   summarise(mean_gap = mean(wage_gap, na.rm = TRUE))
 
-pre_shock_gap <- pre_shock_gap %>%
+pre_shock_gap = pre_shock_gap %>%
   mutate(pos = mean_gap >= 0)
 
 gap2 = ggplot(pre_shock_gap, aes(x = reorder(caem3, mean_gap), y = mean_gap, fill = pos)) +
@@ -304,7 +304,7 @@ summary(feols)
 
 data$predicted_wage = predict(feols, newdata = data)
 
-plot_data <- data %>%
+plot_data = data %>%
   group_by(year, treated) %>%
   summarise(mean_wage = mean(predicted_wage, na.rm = TRUE))
 
@@ -348,13 +348,13 @@ df02 = data %>%
   filter(year==2002) %>%
   mutate(floor_bite03 = rbase - wage_floor_2003)
 
-df02 <- df02 %>%
+df02 = df02 %>%
   mutate(gap_decile = ntile(floor_bite03, 10))
 
-data <- data %>%
+data = data %>%
   left_join(df02 %>% select(i, gap_decile), by = "i")
 
-did_bite <- feols(
+did_bite = feols(
   r_i_wages ~ shock:factor(gap_decile) | year + j + gap_decile,
   data = data,
   cluster = ~caem3
@@ -367,7 +367,7 @@ summary(did_bite)
 
 library(readr)
 
-coef_df <- broom::tidy(did_bite, conf.int = TRUE) %>%
+coef_df = broom::tidy(did_bite, conf.int = TRUE) %>%
   filter(grepl("shock:factor", term)) %>%
   mutate(decile = parse_number(term))
 
@@ -380,11 +380,11 @@ ggplot(coef_df, aes(x = decile, y = estimate)) +
   theme_minimal()
 
 
-decile_values <- df02 %>%  
+decile_values = df02 %>%  
   group_by(gap_decile) %>%
   summarise(median_gap = median(floor_bite03, na.rm = TRUE))
 
-coef_df <- coef_df %>%
+coef_df = coef_df %>%
   left_join(decile_values, by = c("decile" = "gap_decile")) %>%
   mutate(
     decile_label = sprintf("%d (%.2f)", decile, median_gap)  # format: "1 (0.05)"
@@ -413,7 +413,7 @@ print(colnames(data))
 
 # comparing wage/employment trajectories of firms near floor pre-shock vs those far away
 
-plot_data <- data %>%
+plot_data = data %>%
   filter(year %in% 2002:2007) %>%
   group_by(year, gap_decile) %>%
   summarise(
