@@ -37,7 +37,7 @@ movers = movers[!duplicated(movers), ]
 movers[, lag_j := shift(j, type = "lag", n = 1)]
 
 
-# Define job movers (ee)
+# job movers (ee)
 movers <- movers %>%
   group_by(i) %>%
   mutate(
@@ -56,9 +56,9 @@ gc()
 # Unique firms per industry
 
 df_industry_firms <- data %>%
-  group_by(caem3, year) %>%  # Group by caem3 and year
+  group_by(caem3, year) %>%  # grouping by 3-igit industry and year
   summarise(
-    totaluniquefirms = n_distinct(j),  # Count unique firms
+    totaluniquefirms = n_distinct(j),  # counting unique firms
     .groups = "drop"
   )
 
@@ -73,12 +73,12 @@ names(data)[names(data) == "totaluniquefirms.y"] <- "totaluniquefirms"
 
 df <- data %>%
  mutate(
-   vn = as.numeric(sales),           # Convert sales to numeric
-   pemp = as.numeric(nworkers) # Convert num_workers to numeric
+   vn = as.numeric(sales),           
+   pemp = as.numeric(nworkers) 
  ) %>%
   group_by(j, year) %>%
  summarise(
-   fl_prod_workers = log(first(sales) / first(nworkers)),  # Compute sales per worker
+   fl_prod_workers = log(first(sales) / first(nworkers)),  
    .groups = "drop"
  ) %>%
  ungroup()
@@ -103,7 +103,7 @@ df <- data %>%
   ) %>%
   group_by(j, year) %>%
   summarise(
-    fl_prod_hours = log(first(sales) / first(total_hours)),  # Compute sales per worker
+    fl_prod_hours = log(first(sales) / first(total_hours)), 
     .groups = "drop"
   ) %>%
   ungroup()
@@ -114,16 +114,16 @@ data = data %>%
 # industry productivity - number of workers
 
 df_industry <- data %>%
- group_by(caem3, year) %>%  # Group by industry and year
+ group_by(caem3, year) %>% 
  summarise(
-   total_sales = sum(sales, na.rm = TRUE),      # Sum of firm sales in the industry
-   total_workers = sum(nworkers, na.rm = TRUE),  # Sum of workers in the industry
+   total_sales = sum(sales, na.rm = TRUE),      
+   total_workers = sum(nworkers, na.rm = TRUE), 
    .groups = "drop"
  ) %>%
  mutate(
-   sl_prod_workers = ifelse(total_workers > 0, log(total_sales / total_workers), NA)  # Compute safely
+   sl_prod_workers = ifelse(total_workers > 0, log(total_sales / total_workers), NA)  
  ) %>%
- arrange(caem3, year)  # Ensure proper ordering for lag calculation
+ arrange(caem3, year)  
 
 data = data %>%
  left_join(df_industry, by = c("caem3", "year"))
@@ -135,14 +135,14 @@ data = data %>% select(-c("total_workers", "total_sales"))
 df_industry <- data %>%
   group_by(caem3, year) %>%  # Group by industry and year
   summarise(
-    total_sales = sum(sales, na.rm = TRUE),      # Sum of firm sales in the industry
-    ind_total_hours = sum(total_hours, na.rm = TRUE),  # Sum of workers in the industry
+    total_sales = sum(sales, na.rm = TRUE),      
+    ind_total_hours = sum(total_hours, na.rm = TRUE),  
     .groups = "drop"
   ) %>%
   mutate(
-    sl_prod_hours = ifelse(ind_total_hours > 0, log(total_sales / ind_total_hours), NA)  # Compute safely
+    sl_prod_hours = ifelse(ind_total_hours > 0, log(total_sales / ind_total_hours), NA) 
   ) %>%
-  arrange(caem3, year)  # Ensure proper ordering for lag calculation
+  arrange(caem3, year)  
 
 data = data %>%
   left_join(df_industry, by = c("caem3", "year"))
@@ -387,7 +387,7 @@ decile_values <- df02 %>%
 coef_df <- coef_df %>%
   left_join(decile_values, by = c("decile" = "gap_decile")) %>%
   mutate(
-    decile_label = sprintf("%d (%.2f)", decile, median_gap)  # Format: "1 (0.05)"
+    decile_label = sprintf("%d (%.2f)", decile, median_gap)  # format: "1 (0.05)"
   )
 
 ggplot(coef_df, aes(x = decile, y = estimate)) +
